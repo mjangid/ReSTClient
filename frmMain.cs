@@ -26,12 +26,32 @@ namespace ReSTClient
             MoveControls();
         }
 
+        void FillResponseHeader(HttpResponseHeaders headers)
+        {
+            //empty the grid
+            //int nCount = dataGridViewHeader.Rows.Count();
+           
+            //fill the grid from response
+            int nRows = 0;
+            var enum1 = headers.GetEnumerator();
+            while (enum1.MoveNext())
+            {
+                KeyValuePair<string, IEnumerable<string>> kvPair = enum1.Current;
+                dataGridViewHeader.Rows.Add();
+                dataGridViewHeader.Rows[nRows].Cells[0].Value = kvPair.Key;
+                var enum2 = headers.GetValues(kvPair.Key).GetEnumerator();
+                while (enum2.MoveNext())
+                {
+                    dataGridViewHeader.Rows[nRows++].Cells[1].Value = enum2.Current;
+                }
+            }            
+        }
         void MoveControls()
         {
             // tab control position
             tabControl1.Top = 50;
             tabControl1.Left = 5;
-            tabControl1.Width = this.Width - 5;
+            tabControl1.Width = this.Width - 20;
             tabControl1.Height = this.Height - 60;
 
             richTextBox1.Top = 5;
@@ -39,15 +59,20 @@ namespace ReSTClient
             richTextBox1.Width = tabControl1.Width - 40;
             richTextBox1.Height = tabControl1.Height - 70;
 
+            dataGridViewHeader.Top = 5;
+            dataGridViewHeader.Left = 5;
+            dataGridViewHeader.Width = tabControl1.Width - 40; ;
+            dataGridViewHeader.Height = tabControl1.Height - 70; ;
+
             comboBox1.Left = 5;
             comboBox1.Top = 5;
             comboBox1.Height = 40;
             comboBox1.Width = 95;
 
-            textBox1.Left = 105;
-            textBox1.Top = 5;
-            textBox1.Height = 40;
-            textBox1.Width = this.Width - 200;
+            txtURI.Left = 105;
+            txtURI.Top = 5;
+            txtURI.Height = 40;
+            txtURI.Width = this.Width - 200;
 
             button1.Left = this.Width - 85;
             button1.Top = 5;
@@ -60,34 +85,56 @@ namespace ReSTClient
             MoveControls();
         }
 
-        private async void OnSend(object sender, EventArgs e)
+        private void OnSend(object sender, EventArgs e)
+        {
+            switch (comboBox1.SelectedIndex)
+            {
+                case 0: //GET
+                    getRequest();
+                    break;
+                case 1: //PUT
+                    putRequest();
+                    break;
+                case 2: //POST
+                    postRequest();
+                    break;
+                case 3: //DELETE
+                    deleteRequest();
+                    break;
+                case 4: //INTERNET Mode
+                    internetRequest();
+                    return;
+            }
+            tabControl1.SelectedIndex = 0;
+        }
+
+        private void SetLink(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            LinkLabel link = (LinkLabel) sender;
+            txtURI.Text = link.Text;
+        }
+
+        private async void getRequest()
         {
             try
             {
                 string responseBodyAsText;
-                string url_string = textBox1.Text;
-
-                if (comboBox1.SelectedIndex == 4)
-                {
-                    tabControl1.SelectedIndex = 2;
-                    xmlView.Navigate(url_string);
-                    return;
-                }
-
+                string url_string = txtURI.Text;
                 httpClient = new HttpClient();
 
                 var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
                 var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
                 httpClient.DefaultRequestHeaders.Authorization = header;
 
-
-
                 HttpResponseMessage response = await httpClient.GetAsync(url_string);
                 response.EnsureSuccessStatusCode();
                 responseBodyAsText = await response.Content.ReadAsStringAsync();
-                responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
+//              responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
                 richTextBox1.Text = responseBodyAsText;
                 xmlView.Navigate(url_string);
+
+                // fill response headers
+                FillResponseHeader(response.Headers);
             }
             catch (HttpRequestException hre)
             {
@@ -98,46 +145,99 @@ namespace ReSTClient
                 richTextBox1.Text = ex.ToString();
             }
         }
-
-        private void OnClickTab(object sender, EventArgs e)
+        private async void putRequest()
         {
-            
-        }
+            try{
+                string responseBodyAsText;
+                string url_string = txtURI.Text;
+                httpClient = new HttpClient();
 
-        private void OnRawText(object sender, EventArgs e)
-        {
+                var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
+                var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                httpClient.DefaultRequestHeaders.Authorization = header;
 
-        }
+                HttpResponseMessage response = null;// await httpClient.PutAsync(url_string);
+                response.EnsureSuccessStatusCode();
+                responseBodyAsText = await response.Content.ReadAsStringAsync();
+                //                responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
+                richTextBox1.Text = responseBodyAsText;
+                xmlView.Navigate(url_string);
 
-        private void OnLinks(object sender, EventArgs e)
-        {
-
-        }
-
-        private void OnXMLView(object sender, EventArgs e)
-        {
-
-        }
-
-        private void OnAuthentication(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void OnHeader(object sender, EventArgs e)
-        {
-
-        }
-
-        private void OnOAuth(object sender, EventArgs e)
-        {
+            }
+            catch (HttpRequestException hre)
+            {
+                richTextBox1.Text = hre.ToString();
+            }
+            catch (Exception ex)
+            {
+                richTextBox1.Text = ex.ToString();
+            }
 
         }
-
-        private void SetLink(object sender, LinkLabelLinkClickedEventArgs e)
+        private async void postRequest()
         {
-            LinkLabel link = (LinkLabel) sender;
-            textBox1.Text = link.Text;
+            try
+            {
+                string responseBodyAsText;
+                string url_string = txtURI.Text;
+                httpClient = new HttpClient();
+
+                var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
+                var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                httpClient.DefaultRequestHeaders.Authorization = header;
+
+                HttpResponseMessage response = null;// await httpClient.PostAsync(url_string);
+                response.EnsureSuccessStatusCode();
+                responseBodyAsText = await response.Content.ReadAsStringAsync();
+                //                responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
+                richTextBox1.Text = responseBodyAsText;
+                xmlView.Navigate(url_string);
+
+            }
+            catch (HttpRequestException hre)
+            {
+                richTextBox1.Text = hre.ToString();
+            }
+            catch (Exception ex)
+            {
+                richTextBox1.Text = ex.ToString();
+            }
+
+        }
+        private async void deleteRequest()
+        {
+            try
+            {
+                string responseBodyAsText;
+                string url_string = txtURI.Text;
+                httpClient = new HttpClient();
+
+                var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
+                var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                httpClient.DefaultRequestHeaders.Authorization = header;
+
+                HttpResponseMessage response = await httpClient.DeleteAsync(url_string);
+                response.EnsureSuccessStatusCode();
+                responseBodyAsText = await response.Content.ReadAsStringAsync();
+                //        responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
+                richTextBox1.Text = responseBodyAsText;
+                xmlView.Navigate(url_string);
+
+            }
+            catch (HttpRequestException hre)
+            {
+                richTextBox1.Text = hre.ToString();
+            }
+            catch (Exception ex)
+            {
+                richTextBox1.Text = ex.ToString();
+            }
+
+        }
+        private void internetRequest()
+        {
+            tabControl1.SelectedIndex = 2;
+            xmlView.Navigate(txtURI.Text);
         }
     }
 }
