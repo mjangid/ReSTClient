@@ -15,9 +15,6 @@ namespace ReSTClient
 {
     public partial class FrmMain : Form
     {
-        string url_string;
-        HttpClient httpClient;
-
         public FrmMain()
         {
             InitializeComponent();
@@ -29,7 +26,7 @@ namespace ReSTClient
         void FillResponseHeader(HttpResponseHeaders headers)
         {
             //empty the grid
-            //int nCount = dataGridViewHeader.Rows.Count();
+            int nCount = dataGridViewHeader.Rows.Count();
            
             //fill the grid from response
             int nRows = 0;
@@ -54,15 +51,15 @@ namespace ReSTClient
             tabControl1.Width = this.Width - 20;
             tabControl1.Height = this.Height - 60;
 
-            richTextBox1.Top = 5;
-            richTextBox1.Left = 5;
-            richTextBox1.Width = tabControl1.Width - 40;
-            richTextBox1.Height = tabControl1.Height - 70;
+            rtbResponse.Top = 5;
+            rtbResponse.Left = 5;
+            rtbResponse.Width = tabControl1.Width - 40;
+            rtbResponse.Height = tabControl1.Height - 70;
 
             dataGridViewHeader.Top = 5;
             dataGridViewHeader.Left = 5;
             dataGridViewHeader.Width = tabControl1.Width - 40; ;
-            dataGridViewHeader.Height = tabControl1.Height - 70; ;
+            dataGridViewHeader.Height = tabControl1.Height - 70;
 
             comboBox1.Left = 5;
             comboBox1.Top = 5;
@@ -78,6 +75,11 @@ namespace ReSTClient
             button1.Top = 5;
             button1.Height = 40;
             button1.Width = 60;
+
+            listHistory.Top = 5;
+            listHistory.Left = 5;
+            listHistory.Width = this.Width - 40;
+            listHistory.Height = tabControl1.Height - 70;
 
         }
         private void OnSize(object sender, EventArgs e)
@@ -120,7 +122,7 @@ namespace ReSTClient
             {
                 string responseBodyAsText;
                 string url_string = txtURI.Text;
-                httpClient = new HttpClient();
+                HttpClient httpClient = new HttpClient();
 
                 var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
                 var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
@@ -130,7 +132,7 @@ namespace ReSTClient
                 response.EnsureSuccessStatusCode();
                 responseBodyAsText = await response.Content.ReadAsStringAsync();
 //              responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
-                richTextBox1.Text = responseBodyAsText;
+                rtbResponse.Text = responseBodyAsText;
                 xmlView.Navigate(url_string);
 
                 // fill response headers
@@ -138,11 +140,11 @@ namespace ReSTClient
             }
             catch (HttpRequestException hre)
             {
-                richTextBox1.Text = hre.ToString();
+                rtbResponse.Text = hre.ToString();
             }
             catch (Exception ex)
             {
-                richTextBox1.Text = ex.ToString();
+                rtbResponse.Text = ex.ToString();
             }
         }
         private async void putRequest()
@@ -150,27 +152,27 @@ namespace ReSTClient
             try{
                 string responseBodyAsText;
                 string url_string = txtURI.Text;
-                httpClient = new HttpClient();
+                HttpClient httpClient = new HttpClient();
+                HttpContent httpContent = new StringContent(rtbRequest.Rtf);
 
                 var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
                 var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
                 httpClient.DefaultRequestHeaders.Authorization = header;
 
-                HttpResponseMessage response = null;// await httpClient.PutAsync(url_string);
+                HttpResponseMessage response = await httpClient.PutAsync(url_string, httpContent);
                 response.EnsureSuccessStatusCode();
                 responseBodyAsText = await response.Content.ReadAsStringAsync();
-                //                responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
-                richTextBox1.Text = responseBodyAsText;
+                rtbResponse.Text = responseBodyAsText;
                 xmlView.Navigate(url_string);
 
             }
             catch (HttpRequestException hre)
             {
-                richTextBox1.Text = hre.ToString();
+                rtbResponse.Text = hre.ToString();
             }
             catch (Exception ex)
             {
-                richTextBox1.Text = ex.ToString();
+                rtbResponse.Text = ex.ToString();
             }
 
         }
@@ -180,27 +182,28 @@ namespace ReSTClient
             {
                 string responseBodyAsText;
                 string url_string = txtURI.Text;
-                httpClient = new HttpClient();
+                HttpClient httpClient = new HttpClient();
+                HttpContent httpContent = new StringContent(rtbRequest.Rtf);
 
                 var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
                 var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
                 httpClient.DefaultRequestHeaders.Authorization = header;
 
-                HttpResponseMessage response = null;// await httpClient.PostAsync(url_string);
+                HttpResponseMessage response = await httpClient.PostAsync(url_string, httpContent);
                 response.EnsureSuccessStatusCode();
                 responseBodyAsText = await response.Content.ReadAsStringAsync();
                 //                responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
-                richTextBox1.Text = responseBodyAsText;
+                rtbResponse.Text = responseBodyAsText;
                 xmlView.Navigate(url_string);
 
             }
             catch (HttpRequestException hre)
             {
-                richTextBox1.Text = hre.ToString();
+                rtbResponse.Text = hre.ToString();
             }
             catch (Exception ex)
             {
-                richTextBox1.Text = ex.ToString();
+                rtbResponse.Text = ex.ToString();
             }
 
         }
@@ -210,7 +213,7 @@ namespace ReSTClient
             {
                 string responseBodyAsText;
                 string url_string = txtURI.Text;
-                httpClient = new HttpClient();
+                HttpClient httpClient = new HttpClient();
 
                 var byteArray = Encoding.ASCII.GetBytes(txtUserName.Text + ":" + txtPassword.Text);
                 var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
@@ -220,17 +223,17 @@ namespace ReSTClient
                 response.EnsureSuccessStatusCode();
                 responseBodyAsText = await response.Content.ReadAsStringAsync();
                 //        responseBodyAsText = responseBodyAsText.Replace("<br>", Environment.NewLine); // Insert new lines
-                richTextBox1.Text = responseBodyAsText;
+                rtbResponse.Text = responseBodyAsText;
                 xmlView.Navigate(url_string);
 
             }
             catch (HttpRequestException hre)
             {
-                richTextBox1.Text = hre.ToString();
+                rtbResponse.Text = hre.ToString();
             }
             catch (Exception ex)
             {
-                richTextBox1.Text = ex.ToString();
+                rtbResponse.Text = ex.ToString();
             }
 
         }
